@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <!--
+      Reemplaza https://TU-PROYECTO.supabase.co por la Project URL real de tu proyecto Supabase.
+      Nota: <meta http-equiv="Content-Security-Policy"> no soporta directivas como frame-ancestors,
+      report-uri ni sandbox; el control de embed en iframes requiere cabeceras HTTP del servidor.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://qarraqwopmytcnfwlcmv.supabase.co blob: data:; connect-src https://qarraqwopmytcnfwlcmv.supabase.co; font-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
+    />
+    <title>Álbum privado</title>
+    <link rel="stylesheet" href="css/base.css" />
+    <script src="js/vendor/supabase.js" defer></script>
+    <script type="module" src="js/gallery.js"></script>
+  </head>
+  <body>
+    <!-- Oculto por defecto hasta verificar sesión; la seguridad real la impone RLS en Supabase. -->
+    <div id="album-shell" class="album-shell" hidden>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <h1 class="site-title">Álbum</h1>
+          <button id="logout-button" type="button" class="btn btn-secondary">
+            Cerrar sesión
+          </button>
+        </div>
+
+        <nav id="section-nav" class="section-nav" aria-label="Secciones del álbum" hidden>
+          <ul id="section-nav-list" class="section-nav-list"></ul>
+        </nav>
+      </header>
+
+      <main class="album-main">
+        <div id="album-status-bar" class="album-status-bar" hidden>
+          <p
+            id="album-status"
+            class="status-message"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          ></p>
+          <button id="retry-button" type="button" class="btn btn-secondary" hidden>
+            Reintentar
+          </button>
+        </div>
+
+        <div id="album-sections" class="album-sections"></div>
+      </main>
+
+      <footer class="site-footer">
+        <p>Álbum privado</p>
+      </footer>
+    </div>
+
+    <dialog id="lightbox" class="lightbox" aria-label="Visor de foto">
+      <div id="lightbox-shell" class="lightbox-shell">
+        <div class="lightbox-topbar">
+          <p id="lightbox-counter" class="lightbox-counter" aria-live="polite"></p>
+          <button
+            id="lightbox-close"
+            type="button"
+            class="btn btn-lightbox"
+            aria-label="Cerrar visor"
+          >
+            Cerrar
+          </button>
+        </div>
+
+        <div id="lightbox-stage" class="lightbox-stage">
+          <figure class="lightbox-figure">
+            <p id="lightbox-loading" class="lightbox-loading" hidden>Cargando foto…</p>
+            <img id="lightbox-image" class="lightbox-image" alt="" hidden />
+            <figcaption id="lightbox-caption" class="lightbox-caption" hidden></figcaption>
+          </figure>
+        </div>
+
+        <div class="lightbox-controls">
+          <button
+            id="lightbox-prev"
+            type="button"
+            class="btn btn-lightbox"
+            aria-label="Foto anterior"
+          >
+            Anterior
+          </button>
+          <button
+            id="lightbox-next"
+            type="button"
+            class="btn btn-lightbox"
+            aria-label="Foto siguiente"
+          >
+            Siguiente
+          </button>
+        </div>
+      </div>
+    </dialog>
+  </body>
+</html>

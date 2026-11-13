@@ -1,0 +1,41 @@
+name: Supabase Keepalive
+
+# Este workflow previene la pausa por inactividad de Supabase (plan gratuito)
+# ejecutando un GET a la tabla 'ping' cada 3 días mediante la anon key pública.
+
+on:
+  schedule:
+    # Se ejecuta a las 06:00 UTC cada 3 días
+    - cron: '0 6 */3 * *'
+  # Permite disparar la acción manualmente desde la pestaña "Actions" en GitHub
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Supabase Database
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send GET request to ping table
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ] || [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::Faltan los secrets SUPABASE_URL o SUPABASE_ANON_KEY en GitHub Repository Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+
+          ENDPOINT="${{ secrets.SUPABASE_URL }}/rest/v1/ping?select=id"
+
+          HTTP_CODE=$(curl -s -o response.json -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "$ENDPOINT")
+
+          echo "HTTP Status Code: $HTTP_CODE"
+          cat response.json
+          echo ""
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "::error::La petición a Supabase falló con código $HTTP_CODE."
+            exit 1
+          fi
+
+          echo "Ping a Supabase exitoso. Proyecto activo."

@@ -1,0 +1,26 @@
+# Fotos locales y metadatos privados (NUNCA subir al repositorio)
+originals/
+processed/
+meta.json
+captions.json
+
+# Variables de entorno y credenciales de servicio
+.env
+.env.*
+!.env.example
+
+# Archivos temporales de npm pack si se ejecuta dentro del repo
+package/
+*.tgz
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
