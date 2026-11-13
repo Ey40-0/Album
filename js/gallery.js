@@ -10,6 +10,7 @@ const IMAGE_EXTENSION_RE = /\.(webp|jpe?g|png|avif)$/i;
 const state = {
   photos: [],
   sections: [],
+  thumbUrls: new Map(),
   fullUrlCache: new Map(),
   lastSignedAt: 0,
   refreshTimerId: null,
@@ -17,6 +18,11 @@ const state = {
   currentIndex: -1,
   lastTrigger: null,
   pointerSwipe: null,
+  activeFilter: 'all',
+  bannerPhotoNosotros: null,
+  bannerPhotoAbraham: null,
+  welcomeDismissed: false,
+  welcomeTransitioning: false,
 };
 
 function isImageFile(name) {
@@ -36,10 +42,40 @@ function isAuthError(error) {
   );
 }
 
-function formatFallbackSectionTitle(folderName) {
-  const cleaned = folderName.replace(/[-_]+/g, ' ').trim();
-  if (!cleaned) return folderName;
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+/**
+ * Normaliza la clave lógica de la carpeta para identificar 'nosotros' (Casados-repo)
+ * y 'abraham' (Abraham-repo) sin importar mayúsculas/minúsculas.
+ */
+function getSectionKey(folderName) {
+  const lower = String(folderName || '').trim().toLowerCase();
+  if (lower === 'casados-repo' || lower.startsWith('casados') || lower === 'nosotros') {
+    return 'nosotros';
+  }
+  if (lower === 'abraham-repo' || lower.startsWith('abraham')) {
+    return 'abraham';
+  }
+  return lower;
+}
+
+/**
+ * Devuelve el título limpio de la sección, ocultando nombres técnicos como
+ * "Casados-repo" -> "Nosotros" y "Abraham-repo" -> "Abraham".
+ */
+function formatCleanSectionTitle(folderName, metaTitle) {
+  const key = getSectionKey(folderName);
+  if (key === 'nosotros') return 'Nosotros';
+  if (key === 'abraham') return 'Abraham';
+
+  if (typeof metaTitle === 'string' && metaTitle.trim()) {
+    return metaTitle.trim();
+  }
+
+  const withoutRepo = String(folderName || '')
+    .replace(/-repo$/i, '')
+    .replace(/[-_]+/g, ' ')
+    .trim();
+  if (!withoutRepo) return folderName;
+  return withoutRepo.charAt(0).toUpperCase() + withoutRepo.slice(1);
 }
 
 function compareNames(a, b) {
@@ -151,8 +187,17 @@ async function fetchAlbumData() {
     )
     .map((item) => item.name);
 
+  // Ordenamos priorizando "Nosotros" (Casados-repo) primero y "Abraham" (Abraham-repo) segundo
+  const priorityOrder = { nosotros: 0, abraham: 1 };
   const metaOrder = Object.keys(meta.sections);
+
   folderNames.sort((a, b) => {
+    const keyA = getSectionKey(a);
+    const keyB = getSectionKey(b);
+    const prioA = priorityOrder[keyA] ?? 99;
+    const prioB = priorityOrder[keyB] ?? 99;
+    if (prioA !== prioB) return prioA - prioB;
+
     const idxA = metaOrder.indexOf(a);
     const idxB = metaOrder.indexOf(b);
     if (idxA !== -1 && idxB !== -1) return idxA - idxB;
@@ -185,10 +230,8 @@ async function fetchAlbumData() {
       .filter((item) => item.id !== null && isImageFile(item.name))
       .sort((a, b) => compareNames(a.name, b.name));
 
-    const sectionTitle =
-      typeof meta.sections[folderName] === 'string' && meta.sections[folderName].trim()
-        ? meta.sections[folderName].trim()
-        : formatFallbackSectionTitle(folderName);
+    const sectionKey = getSectionKey(folderName);
+    const sectionTitle = formatCleanSectionTitle(folderName, meta.sections[folderName]);
 
     const sectionPhotos = imageFiles.map((file, idx) => {
       const fullPath = `${folderName}/${file.name}`;
@@ -200,6 +243,7 @@ async function fetchAlbumData() {
       const photoEntry = {
         index: photos.length,
         section: folderName,
+        sectionKey,
         sectionTitle,
         name: file.name,
         fullPath,
@@ -212,7 +256,8 @@ async function fetchAlbumData() {
     });
 
     sections.push({
-      id: `section-${folderName}`,
+      id: `section-${sectionKey}`,
+      key: sectionKey,
       folderName,
       title: sectionTitle,
       photos: sectionPhotos,
@@ -226,8 +271,89 @@ async function fetchAlbumData() {
   return { sections, photos, thumbUrls };
 }
 
+/**
+ * Elige una foto aleatoria de una lista, procurando no repetir la actual si hay más de 1.
+ */
+function pickRandomPhoto(photoList, currentPhoto = null) {
+  if (!Array.isArray(photoList) || photoList.length === 0) return null;
+  if (photoList.length === 1) return photoList[0];
+
+  const candidates = currentPhoto
+    ? photoList.filter((p) => p.fullPath !== currentPhoto.fullPath)
+    : photoList;
+  const pool = candidates.length > 0 ? candidates : photoList;
+  const randomIdx = Math.floor(Math.random() * pool.length);
+  return pool[randomIdx];
+}
+
+/**
+ * Crea un corazón SVG dibujado a mano en la capa de efectos de bienvenida.
+ */
+function spawnWelcomeHearts(fxLayer, originX, originY) {
+  if (!fxLayer) return;
+
+  const rect = fxLayer.getBoundingClientRect();
+  const baseX = typeof originX === 'number' ? originX - rect.left : rect.width / 2;
+  const baseY = typeof originY === 'number' ? originY - rect.top : rect.height / 2;
+
+  const count = 16;
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'fx-heart-particle';
+
+    const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.45;
+    const distance = 60 + Math.random() * 140;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance - (40 + Math.random() * 70);
+    const rot = Math.round((Math.random() - 0.5) * 60);
+    const scale = (0.75 + Math.random() * 0.75).toFixed(2);
+    const size = Math.round(22 + Math.random() * 20);
+
+    el.style.left = `${baseX}px`;
+    el.style.top = `${baseY}px`;
+    el.style.width = `${size}px`;
+    el.style.height = `${size}px`;
+    el.style.setProperty('--dx', `${Math.round(dx)}px`);
+    el.style.setProperty('--dy', `${Math.round(dy)}px`);
+    el.style.setProperty('--rot', `${rot}deg`);
+    el.style.setProperty('--scale', scale);
+
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 40 38');
+    svg.setAttribute('fill', 'none');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute(
+      'd',
+      'M20 34C18 31 4 21 4 11.5C4 6 9 3 13.5 4C17 4.8 19 8 20 10.5C21 8 23.5 4 27.5 4C32 4 36 7.5 36 12.5C35.5 22 22 31 20 34Z'
+    );
+    path.setAttribute('stroke', i % 3 === 0 ? '#2a2422' : '#c93b3b');
+    path.setAttribute('stroke-width', '2.3');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    path.setAttribute('fill', i % 2 === 0 ? 'rgba(201, 59, 59, 0.22)' : 'none');
+
+    svg.appendChild(path);
+    el.appendChild(svg);
+    fxLayer.appendChild(el);
+
+    window.setTimeout(() => {
+      el.remove();
+    }, 1000);
+  }
+}
+
 function initAlbumPage() {
   const shell = document.getElementById('album-shell');
+  const welcomeScreen = document.getElementById('welcome-screen');
+  const welcomeFxLayer = document.getElementById('welcome-fx-layer');
+  const dashboardView = document.getElementById('dashboard-view');
+  const reopenWelcomeBtn = document.getElementById('btn-reopen-welcome');
+
   const logoutButton = document.getElementById('logout-button');
   const sectionNav = document.getElementById('section-nav');
   const sectionNavList = document.getElementById('section-nav-list');
@@ -235,7 +361,26 @@ function initAlbumPage() {
   const statusText = document.getElementById('album-status');
   const retryButton = document.getElementById('retry-button');
   const sectionsContainer = document.getElementById('album-sections');
+  const galleryView = document.getElementById('gallery-view');
 
+  // Elementos de las Cards del Dashboard ("Nosotros", "Abraham" y "Carta a Mano")
+  const cardNosotros = document.getElementById('card-nosotros');
+  const bannerImgNosotros = document.getElementById('banner-img-nosotros');
+  const bannerPlaceholderNosotros = document.getElementById('banner-placeholder-nosotros');
+  const countNosotros = document.getElementById('count-nosotros');
+  const shuffleNosotros = document.getElementById('shuffle-nosotros');
+
+  const cardAbraham = document.getElementById('card-abraham');
+  const bannerImgAbraham = document.getElementById('banner-img-abraham');
+  const bannerPlaceholderAbraham = document.getElementById('banner-placeholder-abraham');
+  const countAbraham = document.getElementById('count-abraham');
+  const shuffleAbraham = document.getElementById('shuffle-abraham');
+
+  const btnViewAll = document.getElementById('btn-view-all');
+  const btnBackTop = document.getElementById('btn-back-top');
+  const filterPills = document.querySelectorAll('.filter-pill');
+
+  // Lightbox
   const lightbox = document.getElementById('lightbox');
   const lightboxShell = document.getElementById('lightbox-shell');
   const lightboxStage = document.getElementById('lightbox-stage');
@@ -261,24 +406,89 @@ function initAlbumPage() {
     statusBar.hidden = true;
   }
 
+  /**
+   * Actualiza la miniatura aleatoria de una de las 2 cards principales ("Nosotros" o "Abraham").
+   */
+  function updateCardBanner(key, forceNewRandom = false) {
+    const isNosotros = key === 'nosotros';
+    const imgEl = isNosotros ? bannerImgNosotros : bannerImgAbraham;
+    const placeholderEl = isNosotros ? bannerPlaceholderNosotros : bannerPlaceholderAbraham;
+    const countEl = isNosotros ? countNosotros : countAbraham;
+
+    const section = state.sections.find((s) => s.key === key);
+    const photos = section ? section.photos : [];
+
+    if (countEl) {
+      countEl.textContent =
+        photos.length === 1 ? '1 recuerdo' : `${photos.length} recuerdos`;
+    }
+
+    if (!photos.length) {
+      if (imgEl) imgEl.hidden = true;
+      if (placeholderEl) {
+        placeholderEl.textContent = 'Sin fotos aún';
+        placeholderEl.hidden = false;
+      }
+      return;
+    }
+
+    const currentBanner = isNosotros ? state.bannerPhotoNosotros : state.bannerPhotoAbraham;
+    const chosen =
+      !forceNewRandom && currentBanner
+        ? currentBanner
+        : pickRandomPhoto(photos, currentBanner);
+
+    if (isNosotros) {
+      state.bannerPhotoNosotros = chosen;
+    } else {
+      state.bannerPhotoAbraham = chosen;
+    }
+
+    const signedUrl = chosen ? state.thumbUrls.get(chosen.thumbPath) : null;
+    if (signedUrl && imgEl) {
+      imgEl.src = signedUrl;
+      imgEl.alt = chosen.alt || (isNosotros ? 'Foto de Nosotros' : 'Foto de Abraham');
+      imgEl.dataset.thumbPath = chosen.thumbPath;
+      imgEl.hidden = false;
+      if (placeholderEl) placeholderEl.hidden = true;
+    } else if (placeholderEl) {
+      placeholderEl.textContent = 'Recuerdo listo';
+      placeholderEl.hidden = false;
+    }
+  }
+
+  /**
+   * Filtra las secciones visibles en la galería ("all", "nosotros", "abraham")
+   * y opcionalmente hace scroll suave hacia la galería.
+   */
+  function applyGalleryFilter(filterKey, { scrollToGallery = false } = {}) {
+    state.activeFilter = filterKey;
+
+    for (const pill of filterPills) {
+      const isMatch = pill.dataset.filter === filterKey;
+      pill.classList.toggle('is-active', isMatch);
+      pill.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+    }
+
+    const sectionEls = sectionsContainer.querySelectorAll('.album-section');
+    for (const secEl of sectionEls) {
+      const secKey = secEl.dataset.sectionKey;
+      secEl.hidden = filterKey !== 'all' && secKey !== filterKey;
+    }
+
+    if (scrollToGallery && galleryView) {
+      galleryView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
   function renderGallery(sections, thumbUrls) {
     sectionNavList.textContent = '';
     sectionsContainer.textContent = '';
+    sectionNav.hidden = true;
 
-    if (sections.length > 1) {
-      for (const section of sections) {
-        const li = document.createElement('li');
-        const link = document.createElement('a');
-        link.className = 'section-nav-link';
-        link.href = `#${section.id}`;
-        link.textContent = section.title;
-        li.appendChild(link);
-        sectionNavList.appendChild(li);
-      }
-      sectionNav.hidden = false;
-    } else {
-      sectionNav.hidden = true;
-    }
+    // Actualizamos los banners aleatorios de las cards "Nosotros" (Casados-repo) y "Abraham" (Abraham-repo)
+    updateCardBanner('nosotros', true);
+    updateCardBanner('abraham', true);
 
     if (sections.length === 0) {
       showStatus('Todavía no hay fotos en el álbum.');
@@ -289,6 +499,7 @@ function initAlbumPage() {
       const sectionEl = document.createElement('section');
       sectionEl.id = section.id;
       sectionEl.className = 'album-section';
+      sectionEl.dataset.sectionKey = section.key;
       sectionEl.setAttribute('aria-labelledby', `${section.id}-title`);
 
       const heading = document.createElement('h2');
@@ -300,7 +511,7 @@ function initAlbumPage() {
       if (section.photos.length === 0) {
         const emptyMsg = document.createElement('p');
         emptyMsg.className = 'section-empty';
-        emptyMsg.textContent = 'Esta carpeta aún no tiene fotos.';
+        emptyMsg.textContent = 'Esta sección aún no tiene fotos.';
         sectionEl.appendChild(emptyMsg);
       } else {
         const grid = document.createElement('ul');
@@ -340,6 +551,8 @@ function initAlbumPage() {
 
       sectionsContainer.appendChild(sectionEl);
     }
+
+    applyGalleryFilter(state.activeFilter, { scrollToGallery: false });
   }
 
   async function renderLightboxPhoto(index) {
@@ -347,11 +560,11 @@ function initAlbumPage() {
     if (!photo) return;
 
     state.currentIndex = index;
-    lightboxCounter.textContent = `${index + 1} / ${state.photos.length}`;
+    lightboxCounter.textContent = `${photo.sectionTitle} — ${index + 1} / ${state.photos.length}`;
     lightboxPrev.disabled = state.photos.length <= 1;
     lightboxNext.disabled = state.photos.length <= 1;
 
-    lightboxLoading.textContent = 'Cargando foto…';
+    lightboxLoading.textContent = 'Cargando recuerdo…';
     lightboxLoading.hidden = false;
     lightboxImage.hidden = true;
     lightboxImage.removeAttribute('src');
@@ -419,9 +632,10 @@ function initAlbumPage() {
       state.fullUrlCache.clear();
       const thumbPaths = state.photos.map((p) => p.thumbPath);
       const freshUrls = await createSignedUrlsBatch(thumbPaths);
+      state.thumbUrls = freshUrls;
       state.lastSignedAt = Date.now();
 
-      const imgs = sectionsContainer.querySelectorAll('img[data-thumb-path]');
+      const imgs = document.querySelectorAll('img[data-thumb-path]');
       for (const img of imgs) {
         const path = img.dataset.thumbPath;
         const freshUrl = freshUrls.get(path);
@@ -455,12 +669,13 @@ function initAlbumPage() {
   }
 
   async function loadGallery() {
-    showStatus('Cargando fotos…');
+    showStatus('Cargando nuestros recuerdos…');
 
     try {
       const { sections, photos, thumbUrls } = await fetchAlbumData();
       state.sections = sections;
       state.photos = photos;
+      state.thumbUrls = thumbUrls;
       clearStatus();
       renderGallery(sections, thumbUrls);
       startRefreshSchedule();
@@ -476,7 +691,114 @@ function initAlbumPage() {
     }
   }
 
-  // Eventos de UI
+  // =========================================================================
+  // Interacción de la Pantalla de Bienvenida ("Con Amor para Catalina")
+  // =========================================================================
+  function advanceFromWelcome(clientX, clientY) {
+    if (!welcomeScreen || !dashboardView) return;
+
+    welcomeScreen.classList.add('is-excited');
+    spawnWelcomeHearts(welcomeFxLayer, clientX, clientY);
+
+    if (state.welcomeTransitioning) return;
+    state.welcomeTransitioning = true;
+
+    window.setTimeout(() => {
+      welcomeScreen.classList.add('is-leaving');
+      window.setTimeout(() => {
+        welcomeScreen.hidden = true;
+        welcomeScreen.classList.remove('is-leaving', 'is-excited');
+        dashboardView.hidden = false;
+        state.welcomeDismissed = true;
+        state.welcomeTransitioning = false;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 360);
+    }, 520);
+  }
+
+  if (welcomeScreen) {
+    welcomeScreen.addEventListener('click', (event) => {
+      advanceFromWelcome(event.clientX, event.clientY);
+    });
+
+    welcomeScreen.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        advanceFromWelcome();
+      }
+    });
+  }
+
+  if (reopenWelcomeBtn && welcomeScreen && dashboardView) {
+    reopenWelcomeBtn.addEventListener('click', () => {
+      dashboardView.hidden = true;
+      welcomeScreen.hidden = false;
+      state.welcomeDismissed = false;
+      state.welcomeTransitioning = false;
+    });
+  }
+
+  // =========================================================================
+  // Interacción de las Cards ("Nosotros", "Abraham" y "Carta a Mano")
+  // =========================================================================
+  if (shuffleNosotros) {
+    shuffleNosotros.addEventListener('click', (event) => {
+      event.stopPropagation();
+      updateCardBanner('nosotros', true);
+    });
+  }
+
+  if (shuffleAbraham) {
+    shuffleAbraham.addEventListener('click', (event) => {
+      event.stopPropagation();
+      updateCardBanner('abraham', true);
+    });
+  }
+
+  if (cardNosotros) {
+    cardNosotros.addEventListener('click', () => {
+      applyGalleryFilter('nosotros', { scrollToGallery: true });
+    });
+    cardNosotros.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        applyGalleryFilter('nosotros', { scrollToGallery: true });
+      }
+    });
+  }
+
+  if (cardAbraham) {
+    cardAbraham.addEventListener('click', () => {
+      applyGalleryFilter('abraham', { scrollToGallery: true });
+    });
+    cardAbraham.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        applyGalleryFilter('abraham', { scrollToGallery: true });
+      }
+    });
+  }
+
+  if (btnViewAll) {
+    btnViewAll.addEventListener('click', () => {
+      applyGalleryFilter('all', { scrollToGallery: true });
+    });
+  }
+
+  if (btnBackTop) {
+    btnBackTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  for (const pill of filterPills) {
+    pill.addEventListener('click', () => {
+      const filterKey = pill.dataset.filter || 'all';
+      applyGalleryFilter(filterKey, { scrollToGallery: false });
+    });
+  }
+
+  // Eventos generales de UI
   logoutButton.addEventListener('click', () => {
     if (state.refreshTimerId !== null) {
       window.clearInterval(state.refreshTimerId);

@@ -1,23 +1,44 @@
-/* Variables de diseño pensadas para personalizar la estética sin tocar la estructura */
+/* ==========================================================================
+   Variables de estilo — Estética Flat + Hand-Drawn (Boceto Artesanal Romántico)
+   Restricción: Sin box-shadow pesados ni relieves 3D (100% Flat & Sketch)
+   ========================================================================== */
 :root {
-  --color-bg: #f7f7f5;
-  --color-surface: #ffffff;
-  --color-text: #1c1c1a;
-  --color-text-muted: #5c5c57;
-  --color-border: #dcdcd6;
-  --color-accent: #262624;
-  --color-accent-text: #ffffff;
+  /* Paleta cálida de papel artesanal y tinta */
+  --color-bg: #fbf8f3;
+  --color-paper: #fffdf9;
+  --color-paper-warm: #f6f0e6;
+  --color-surface: #fffdf9;
+  --color-text: #2a2422;
+  --color-text-muted: #6e645e;
+  --color-border: #2a2422;
+  --color-border-soft: #dcd3c6;
+
+  /* Acentos románticos (corazón rojo del boceto) */
+  --color-heart: #c93b3b;
+  --color-heart-hover: #b02e2e;
+  --color-heart-soft: #fceaea;
+  --color-blush: #f4c2c2;
+
+  --color-accent: #2a2422;
+  --color-accent-text: #fffdf9;
   --color-error: #9e1c1c;
   --color-error-bg: #fdf2f2;
-  --color-error-border: #f2c6c6;
-  --color-focus: #1d4ed8;
-  --color-backdrop: rgba(15, 15, 14, 0.88);
+  --color-error-border: #e5a9a9;
+  --color-focus: #c93b3b;
+  --color-backdrop: rgba(32, 27, 25, 0.92);
 
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
+  /* Tipografías */
+  --font-primary: "Pacifico", cursive;
+  --font-hand: "Caveat", cursive;
+  --font-sans: "Patrick Hand", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --text-xs: 0.85rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
+  --text-lg: 1.45rem;
+  --text-xl: 1.9rem;
+  --text-2xl: 2.6rem;
+  --text-3xl: 3.4rem;
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -25,13 +46,23 @@
   --space-4: 1rem;
   --space-5: 1.5rem;
   --space-6: 2rem;
+  --space-7: 2.75rem;
 
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --max-width: 72rem;
-  --transition-fast: 150ms ease;
+  /* Bordes orgánicos trazados a mano */
+  --radius-sketch-1: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  --radius-sketch-2: 15px 225px 15px 255px / 255px 15px 225px 15px;
+  --radius-sketch-btn: 185px 12px 165px 12px / 12px 165px 12px 185px;
+  --radius-sm: 0.4rem;
+  --radius-md: 0.65rem;
+
+  --max-width: 74rem;
+  --transition-fast: 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  --transition-bounce: 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ==========================================================================
+   Reset y Base
+   ========================================================================== */
 *,
 *::before,
 *::after {
@@ -48,14 +79,20 @@ html {
   line-height: 1.5;
   color: var(--color-text);
   background-color: var(--color-bg);
+  scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
 }
 
-body {
+body.sketch-body {
   margin: 0;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background-color: var(--color-bg);
+  /* Textura punteada plana muy sutil de cuaderno de dibujo */
+  background-image: radial-gradient(rgba(42, 36, 34, 0.075) 1px, transparent 1px);
+  background-size: 22px 22px;
+  overflow-x: hidden;
 }
 
 img {
@@ -71,8 +108,8 @@ input {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+  outline: 2px dashed var(--color-focus);
+  outline-offset: 3px;
 }
 
 .sr-only {
@@ -87,61 +124,154 @@ input {
   border: 0;
 }
 
-/* Botones base */
-.btn {
+/* ==========================================================================
+   Elementos de Estilo Boceto (Hand-Drawn / Flat, CERO box-shadow)
+   ========================================================================== */
+.sketch-box {
+  position: relative;
+  background-color: var(--color-paper);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-1);
+  box-shadow: none;
+}
+
+/* Doble trazo orgánico en las esquinas (fiel al marco exterior del boceto) */
+.sketch-box::after {
+  content: "";
+  position: absolute;
+  inset: -4px -5px -6px -3px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sketch-2);
+  opacity: 0.55;
+  pointer-events: none;
+  transform: rotate(-0.35deg);
+}
+
+.sketch-card {
+  position: relative;
+  background-color: var(--color-paper);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-2);
+  box-shadow: none;
+  transition:
+    transform var(--transition-bounce),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.sketch-card::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(42, 36, 34, 0.18);
+  border-radius: var(--radius-sketch-1);
+  pointer-events: none;
+}
+
+.sketch-heart-svg {
+  width: 100%;
+  height: 100%;
+  color: var(--color-heart);
+  transition: transform var(--transition-bounce);
+}
+
+/* ==========================================================================
+   Botones Planos con Trazo a Mano y Micro-interacciones
+   ========================================================================== */
+.btn,
+.sketch-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
+  padding: 0.6rem 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 600;
+  letter-spacing: 0.02em;
   cursor: pointer;
-  transition: opacity var(--transition-fast), background-color var(--transition-fast);
+  box-shadow: none;
+  text-decoration: none;
+  transition:
+    transform var(--transition-bounce),
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .btn:disabled {
-  opacity: 0.65;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+.btn-sm {
+  padding: 0.35rem 0.9rem;
+  font-size: var(--text-sm);
+}
+
 .btn-primary {
-  background-color: var(--color-accent);
-  color: var(--color-accent-text);
+  background-color: var(--color-border);
+  color: var(--color-paper);
 }
 
 .btn-primary:hover:not(:disabled) {
-  opacity: 0.9;
+  background-color: var(--color-heart);
+  border-color: var(--color-heart);
+  transform: translateY(-2px) rotate(-1deg) scale(1.02);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
 }
 
 .btn-secondary {
-  background-color: var(--color-surface);
+  background-color: var(--color-paper);
   border-color: var(--color-border);
   color: var(--color-text);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-bg);
+  background-color: var(--color-heart-soft);
+  border-color: var(--color-heart);
+  color: var(--color-heart);
+  transform: translateY(-2px) rotate(1deg);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn-heart-icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  transition: transform var(--transition-bounce);
+}
+
+.btn:hover .btn-heart-icon {
+  transform: scale(1.25) rotate(10deg);
 }
 
 /* Mensajes de estado y error */
 .status-message {
   margin: 0;
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-sketch-btn);
   font-size: var(--text-sm);
-  border: 1px solid var(--color-border);
-  background-color: var(--color-surface);
+  border: 1.5px dashed var(--color-border);
+  background-color: var(--color-paper-warm);
 }
 
 .status-message.is-error {
   color: var(--color-error);
   background-color: var(--color-error-bg);
-  border-color: var(--color-error-border);
+  border: 1.5px solid var(--color-error-border);
 }
 
-/* Vista de login */
+/* ==========================================================================
+   1. PANTALLA DE LOGIN (index.html)
+   ========================================================================== */
 .login-page {
   flex: 1;
   display: grid;
@@ -150,27 +280,62 @@ input {
 }
 
 .login-card {
+  position: relative;
   width: 100%;
-  max-width: 24rem;
-  padding: var(--space-6);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  max-width: 26rem;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background-color: var(--color-paper);
+}
+
+.login-corner-heart {
+  position: absolute;
+  top: -18px;
+  right: 18px;
+  width: 54px;
+  height: 50px;
+  transform: rotate(10deg);
+  transition: transform var(--transition-bounce);
+}
+
+.login-card:hover .login-corner-heart {
+  transform: rotate(18deg) scale(1.12);
 }
 
 .login-header {
+  text-align: center;
   margin-bottom: var(--space-5);
 }
 
-.login-header h1 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-xl);
-  line-height: 1.25;
+.sketch-eyebrow {
+  display: block;
+  font-family: var(--font-hand);
+  font-size: 1.45rem;
+  color: var(--color-heart);
+  margin-bottom: 0.1rem;
+  transform: rotate(-2deg);
 }
 
-.login-header p {
+.login-title {
   margin: 0;
-  font-size: var(--text-sm);
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: 2.2rem;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.sketch-underline {
+  width: 11rem;
+  height: 0.65rem;
+  margin: 0.2rem auto 0.5rem;
+  display: block;
+  color: var(--color-heart);
+}
+
+.login-subtitle {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
   color: var(--color-text-muted);
 }
 
@@ -187,35 +352,313 @@ input {
 }
 
 .field label {
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
-.field input {
+.sketch-input {
   width: 100%;
-  padding: var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background-color: var(--color-surface);
+  padding: 0.65rem 0.9rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
+  background-color: var(--color-bg);
+  font-size: var(--text-base);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast);
 }
 
-/* Cabecera y navegación del álbum */
+.sketch-input:hover {
+  background-color: var(--color-paper);
+}
+
+.sketch-input:focus {
+  outline: none;
+  border-color: var(--color-heart);
+  background-color: var(--color-paper);
+  transform: scale(1.01);
+}
+
+.login-cat-doodle {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-3);
+  margin-bottom: -0.6rem;
+}
+
+.sketch-cat-mini {
+  width: 74px;
+  height: 68px;
+  color: var(--color-text);
+  transition: transform var(--transition-bounce);
+}
+
+.login-card:hover .sketch-cat-mini {
+  transform: translateY(-3px) rotate(-3deg);
+}
+
+/* ==========================================================================
+   2. PANTALLA DE BIENVENIDA / MENSAJE INTERACTIVO (Boceto Izquierdo)
+   "Con Amor para Catalina — presiona donde sea" + corazón + gatito
+   ========================================================================== */
+.welcome-screen {
+  flex: 1;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    opacity 420ms ease,
+    transform 420ms ease;
+}
+
+.welcome-screen.is-leaving {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
+}
+
+.welcome-frame {
+  position: relative;
+  width: 100%;
+  max-width: 54rem;
+  min-height: clamp(23rem, 68dvh, 34rem);
+  padding: clamp(2rem, 6vw, 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition:
+    transform var(--transition-bounce),
+    border-color var(--transition-fast);
+}
+
+.welcome-screen:hover .welcome-frame {
+  transform: rotate(-0.3deg) scale(1.005);
+}
+
+.welcome-screen:active .welcome-frame {
+  transform: scale(0.992);
+}
+
+/* Capa de corazones interactivos */
+.welcome-fx-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* Corazón dibujado en la esquina superior derecha tal como en guia-visual.png */
+.welcome-heart-top {
+  position: absolute;
+  top: clamp(1.25rem, 4vw, 2.5rem);
+  right: clamp(1.5rem, 6vw, 4rem);
+  width: clamp(56px, 9vw, 84px);
+  height: clamp(52px, 8.5vw, 78px);
+  z-index: 2;
+  transform: rotate(6deg);
+  animation: heartFloat 3.2s ease-in-out infinite;
+}
+
+.welcome-screen:hover .welcome-heart-top {
+  transform: rotate(14deg) scale(1.15);
+}
+
+/* Bloque de texto romántico central-izquierdo */
+.welcome-message {
+  position: relative;
+  z-index: 3;
+  text-align: center;
+  max-width: 34rem;
+  margin-right: clamp(0rem, 10vw, 6rem);
+  margin-bottom: clamp(3.5rem, 8vw, 1rem);
+}
+
+.welcome-greeting {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-hand);
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.1;
+  transform: rotate(-2deg);
+}
+
+.welcome-name {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: clamp(3rem, 8.5vw, 5.2rem);
+  line-height: 1.15;
+  color: var(--color-text);
+  letter-spacing: 0.01em;
+  transform: rotate(-1.5deg);
+  transition: color var(--transition-fast), transform var(--transition-bounce);
+}
+
+.welcome-screen:hover .welcome-name {
+  color: var(--color-heart);
+  transform: rotate(-2.5deg) scale(1.03);
+}
+
+.welcome-prompt {
+  margin: 1.35rem 0 0;
+  font-family: var(--font-hand);
+  font-size: clamp(1.35rem, 3.2vw, 1.75rem);
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.9rem;
+  border-bottom: 1.5px dashed var(--color-border-soft);
+  animation: promptPulse 2.2s ease-in-out infinite;
+}
+
+.welcome-prompt-dot {
+  color: var(--color-heart);
+  font-size: 1rem;
+}
+
+/* Gatito dibujado en la esquina inferior derecha (fiel al boceto) */
+.welcome-cat-wrapper {
+  position: absolute;
+  bottom: clamp(0.8rem, 3vw, 2rem);
+  right: clamp(1.2rem, 5vw, 3.5rem);
+  width: clamp(115px, 22vw, 175px);
+  height: clamp(110px, 21vw, 168px);
+  z-index: 2;
+  transition: transform var(--transition-bounce);
+}
+
+.welcome-cat-svg {
+  width: 100%;
+  height: 100%;
+  color: var(--color-text);
+}
+
+.cat-blush {
+  fill: var(--color-blush);
+  opacity: 0.65;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.cat-tail {
+  transform-origin: 118px 132px;
+  animation: tailWag 3.6s ease-in-out infinite;
+}
+
+.welcome-screen:hover .welcome-cat-wrapper,
+.welcome-screen.is-excited .welcome-cat-wrapper {
+  transform: translateY(-6px) rotate(-3deg) scale(1.05);
+}
+
+.welcome-screen:hover .cat-blush,
+.welcome-screen.is-excited .cat-blush {
+  opacity: 1;
+}
+
+/* Partículas de corazones al hacer clic */
+.fx-heart-particle {
+  position: absolute;
+  pointer-events: none;
+  will-change: transform, opacity;
+  animation: heartBurstFly 950ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes heartFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(6deg);
+  }
+  50% {
+    transform: translateY(-7px) rotate(11deg) scale(1.05);
+  }
+}
+
+@keyframes promptPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes tailWag {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+@keyframes heartBurstFly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -120px)))
+      scale(var(--scale, 1.3)) rotate(var(--rot, 18deg));
+  }
+}
+
+/* ==========================================================================
+   3. VISTA PRINCIPAL: CABECERA Y DASHBOARD (Boceto Derecho)
+   ========================================================================== */
 .album-shell {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
+.dashboard-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInDashboard 450ms ease;
+}
+
+@keyframes fadeInDashboard {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .site-header {
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-paper);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .site-header-inner {
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: var(--space-4);
+  padding: 0.85rem var(--space-4);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -223,10 +666,36 @@ input {
   gap: var(--space-3);
 }
 
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.site-brand-heart {
+  color: var(--color-heart);
+  font-size: 1.4rem;
+  line-height: 1;
+  display: inline-block;
+  transition: transform var(--transition-bounce);
+}
+
+.site-brand:hover .site-brand-heart {
+  transform: scale(1.25) rotate(-12deg);
+}
+
 .site-title {
   margin: 0;
-  font-size: var(--text-xl);
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: clamp(1.25rem, 3vw, 1.65rem);
   line-height: 1.2;
+}
+
+.site-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .section-nav {
@@ -247,26 +716,32 @@ input {
 
 .section-nav-link {
   display: inline-block;
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
   font-size: var(--text-sm);
   color: var(--color-text);
   text-decoration: none;
   background-color: var(--color-bg);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
 }
 
 .section-nav-link:hover {
-  border-color: var(--color-text-muted);
+  background-color: var(--color-heart-soft);
+  border-color: var(--color-heart);
+  transform: translateY(-1px);
 }
 
-/* Contenido principal de galería */
+/* Contenedor principal */
 .album-main {
   flex: 1;
   width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--space-5) var(--space-4) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 .album-status-bar {
@@ -275,7 +750,483 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  margin-bottom: var(--space-5);
+}
+
+/* ==========================================================================
+   MARCO PRINCIPAL DEL BOCETO (2 Cards Izquierda + Carta a Mano Derecha)
+   Responsividad Mobile-First:
+   - En móvil: La Carta a Mano (.dashboard-letter-col) va PRIMERA (order: -1).
+   - En escritorio (>= 52rem): Las 2 Cards van a la izquierda y la Carta a la derecha.
+   ========================================================================== */
+.dashboard-sketch-frame {
+  padding: clamp(1.1rem, 3vw, 2.25rem);
+  background-color: var(--color-paper);
+}
+
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+/* ORDEN EN MÓVILES: La carta a mano aparece de primera en teléfonos */
+.dashboard-letter-col {
+  order: -1;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-cards-col {
+  order: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1.25rem, 2.5vw, 1.5rem);
+}
+
+/* En tablets medianas apilamos la carta arriba y las 2 cards de fotos en 2 columnas debajo */
+@media (min-width: 36rem) {
+  .dashboard-cards-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* En escritorio (>= 52rem): Exactamente como el boceto derecho (Nosotros | Abraham | Carta) */
+@media (min-width: 52rem) {
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.05fr;
+    align-items: stretch;
+  }
+
+  .dashboard-cards-col {
+    order: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-letter-col {
+    order: 2;
+  }
+}
+
+/* ==========================================================================
+   CARDS DE SECCIÓN CON BANNER ("Nosotros" y "Abraham")
+   ========================================================================== */
+.story-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  min-height: clamp(21rem, 44vw, 29rem);
+  cursor: pointer;
+  background-color: var(--color-paper);
+}
+
+#card-nosotros:hover {
+  transform: translateY(-4px) rotate(-0.8deg);
+  border-color: var(--color-heart);
+}
+
+#card-abraham:hover {
+  transform: translateY(-4px) rotate(0.8deg);
+  border-color: var(--color-heart);
+}
+
+.story-card:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Corazones decorativos en las esquinas exactas del boceto */
+.card-heart {
+  position: absolute;
+  width: 44px;
+  height: 41px;
+  z-index: 4;
+  pointer-events: none;
+  transition: transform var(--transition-bounce);
+}
+
+/* En "Nosotros": esquina superior derecha */
+.card-heart-top-right {
+  top: -15px;
+  right: -10px;
+  transform: rotate(12deg);
+}
+
+/* En "Abraham": esquina inferior derecha */
+.card-heart-bottom-right {
+  bottom: -14px;
+  right: -10px;
+  transform: rotate(-10deg);
+}
+
+.story-card:hover .card-heart-top-right {
+  transform: rotate(22deg) scale(1.18);
+}
+
+.story-card:hover .card-heart-bottom-right {
+  transform: rotate(-20deg) scale(1.18);
+}
+
+.story-card-header {
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.story-card-title {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: clamp(2.1rem, 3.5vw, 2.65rem);
+  line-height: 1.1;
+  color: var(--color-text);
+  transition: color var(--transition-fast);
+}
+
+.story-card:hover .story-card-title {
+  color: var(--color-heart);
+}
+
+.story-card-count {
+  display: inline-block;
+  margin-top: 0.15rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+/* Banner con trazos diagonales inspirados en el boceto y miniatura aleatoria */
+.story-banner-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-2) 0 var(--space-3);
+  padding: 0.6rem 0;
+}
+
+/* Líneas diagonales dibujadas como en el boceto que enmarcan el banner */
+.story-banner-diagonal-lines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.story-banner-diagonal-lines::before,
+.story-banner-diagonal-lines::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  height: 2px;
+  background-color: var(--color-border);
+  transform: rotate(-11deg);
+  transition: transform var(--transition-bounce), background-color var(--transition-fast);
+}
+
+.story-banner-diagonal-lines::before {
+  top: 12%;
+}
+
+.story-banner-diagonal-lines::after {
+  bottom: 12%;
+}
+
+.story-card:hover .story-banner-diagonal-lines::before {
+  transform: rotate(-9deg) translateY(-3px);
+  background-color: var(--color-heart);
+}
+
+.story-card:hover .story-banner-diagonal-lines::after {
+  transform: rotate(-9deg) translateY(3px);
+  background-color: var(--color-heart);
+}
+
+.story-banner-frame {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  min-height: 13.5rem;
+  max-height: 19rem;
+  aspect-ratio: 4 / 4.6;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-1);
+  overflow: hidden;
+  background-color: var(--color-paper-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-1.2deg);
+  transition: transform var(--transition-bounce), border-color var(--transition-fast);
+}
+
+#card-abraham .story-banner-frame {
+  transform: rotate(1.2deg);
+}
+
+.story-card:hover .story-banner-frame {
+  transform: rotate(0deg) scale(1.02);
+  border-color: var(--color-heart);
+}
+
+.story-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+
+.story-card:hover .story-banner-img {
+  transform: scale(1.05);
+}
+
+.story-banner-placeholder {
+  padding: var(--space-4);
+  text-align: center;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  color: var(--color-text-muted);
+}
+
+.story-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1.5px dashed var(--color-border-soft);
+}
+
+.story-card-cta {
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.story-card:hover .story-card-cta {
+  color: var(--color-heart);
+  transform: translateX(3px);
+}
+
+.btn-shuffle-banner {
+  position: relative;
+  z-index: 3;
+  padding: 0.2rem 0.6rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
+  background-color: var(--color-bg);
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    transform var(--transition-bounce),
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.btn-shuffle-banner:hover {
+  background-color: var(--color-heart-soft);
+  border-color: var(--color-heart);
+  color: var(--color-heart);
+  transform: rotate(-4deg) scale(1.06);
+}
+
+.btn-shuffle-banner:active {
+  transform: scale(0.94);
+}
+
+/* ==========================================================================
+   CARD DE "CARTA A MANO" (Columna Derecha en Escritorio / Primera en Móvil)
+   ========================================================================== */
+.letter-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-4) var(--space-4);
+  background-color: var(--color-paper);
+  min-height: clamp(22rem, 44vw, 29rem);
+}
+
+.letter-card:hover {
+  transform: translateY(-3px) rotate(0.4deg);
+  border-color: var(--color-border);
+}
+
+.letter-pin-doodle {
+  display: flex;
+  justify-content: center;
+  margin-top: -0.6rem;
+  margin-bottom: var(--space-2);
+  color: var(--color-heart);
+}
+
+/* Papel rayado estilo carta escrita a mano */
+.letter-paper {
+  flex: 1;
+  padding: 0.25rem 0.5rem 0.75rem;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 29px,
+    var(--color-border-soft) 29px,
+    var(--color-border-soft) 30px
+  );
+  background-position: 0 0.4rem;
+}
+
+.letter-title {
+  margin: 0 0 0.55rem;
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: 1.55rem;
+  line-height: 30px;
+  color: var(--color-heart);
+}
+
+.letter-body {
+  font-family: var(--font-hand);
+  font-size: 1.42rem;
+  line-height: 30px;
+  color: var(--color-text);
+}
+
+.letter-body p {
+  margin: 0 0 30px;
+}
+
+.letter-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Pie de la carta con el muñequito sosteniendo el corazón + botón "Ver todas" */
+.letter-footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.letter-doodle-figure {
+  width: 96px;
+  height: 92px;
+  color: var(--color-text);
+  transition: transform var(--transition-bounce);
+}
+
+.figure-heart-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.doodle-held-heart {
+  transform-origin: 34px 26px;
+  animation: heldHeartPulse 2.4s ease-in-out infinite;
+}
+
+.letter-card:hover .letter-doodle-figure {
+  transform: translateY(-4px) rotate(-3deg) scale(1.06);
+}
+
+@keyframes heldHeartPulse {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+}
+
+.btn-view-all {
+  width: 100%;
+  font-size: 1.15rem;
+  padding: 0.7rem 1.25rem;
+}
+
+/* ==========================================================================
+   4. SECCIÓN DE GALERÍA COMPLETA Y FILTROS
+   ========================================================================== */
+.gallery-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  scroll-margin-top: 1.5rem;
+}
+
+.gallery-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-paper);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
+}
+
+.gallery-filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-pill {
+  padding: 0.4rem 1rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sketch-btn);
+  background-color: var(--color-bg);
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    transform var(--transition-bounce),
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.filter-pill:hover {
+  background-color: var(--color-heart-soft);
+  border-color: var(--color-heart);
+  transform: translateY(-2px) rotate(-1deg);
+}
+
+.filter-pill.is-active {
+  background-color: var(--color-heart);
+  border-color: var(--color-heart);
+  color: var(--color-paper);
+  transform: rotate(-1deg);
+}
+
+.btn-link-sketch {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  font-family: var(--font-hand);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 1.5px dashed var(--color-border-soft);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-link-sketch:hover {
+  color: var(--color-heart);
+  border-bottom-color: var(--color-heart);
+  transform: translateY(-2px);
 }
 
 .album-sections {
@@ -284,15 +1235,36 @@ input {
   gap: var(--space-6);
 }
 
+.album-section {
+  background-color: var(--color-paper);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-1);
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+}
+
 .album-section-title {
   margin: 0 0 var(--space-4);
-  font-size: var(--text-lg);
-  line-height: 1.3;
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.25;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.album-section-title::before {
+  content: "♥";
+  color: var(--color-heart);
+  font-family: var(--font-sans);
+  font-size: 1.2rem;
 }
 
 .section-empty {
   margin: 0;
-  font-size: var(--text-sm);
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
   color: var(--color-text-muted);
 }
 
@@ -301,8 +1273,8 @@ input {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(9.25rem, 1fr));
+  gap: var(--space-3);
 }
 
 @media (min-width: 40rem) {
@@ -312,27 +1284,50 @@ input {
   }
 }
 
+.photo-item {
+  display: flex;
+}
+
 .photo-trigger {
   display: block;
   width: 100%;
-  padding: 0;
-  border: 0;
-  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.45rem 0.9rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sketch-2);
   overflow: hidden;
-  background-color: var(--color-border);
-  aspect-ratio: 4 / 3;
+  background-color: var(--color-bg);
+  aspect-ratio: 4 / 3.4;
   cursor: pointer;
+  box-shadow: none;
+  transition:
+    transform var(--transition-bounce),
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.photo-item:nth-child(odd) .photo-trigger:hover {
+  transform: translateY(-4px) rotate(-1.5deg) scale(1.02);
+  border-color: var(--color-heart);
+  background-color: var(--color-paper);
+}
+
+.photo-item:nth-child(even) .photo-trigger:hover {
+  transform: translateY(-4px) rotate(1.5deg) scale(1.02);
+  border-color: var(--color-heart);
+  background-color: var(--color-paper);
+}
+
+.photo-trigger:active {
+  transform: scale(0.97);
 }
 
 .photo-thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-fast);
-}
-
-.photo-trigger:hover .photo-thumb {
-  transform: scale(1.02);
+  border: 1.5px solid var(--color-border);
+  border-radius: 4px;
+  background-color: var(--color-paper-warm);
 }
 
 .site-footer {
@@ -340,12 +1335,16 @@ input {
   max-width: var(--max-width);
   margin: 0 auto;
   padding: var(--space-4);
-  font-size: var(--text-sm);
+  text-align: center;
+  font-family: var(--font-hand);
+  font-size: 1.35rem;
   color: var(--color-text-muted);
-  border-top: 1px solid var(--color-border);
+  border-top: 2px dashed var(--color-border-soft);
 }
 
-/* Lightbox con <dialog> */
+/* ==========================================================================
+   5. LIGHTBOX CON <dialog>
+   ========================================================================== */
 dialog.lightbox {
   width: 100%;
   max-width: 100%;
@@ -355,7 +1354,7 @@ dialog.lightbox {
   padding: 0;
   border: 0;
   background: transparent;
-  color: #ffffff;
+  color: var(--color-paper);
 }
 
 dialog.lightbox[open] {
@@ -385,7 +1384,8 @@ dialog.lightbox::backdrop {
 
 .lightbox-counter {
   margin: 0;
-  font-size: var(--text-sm);
+  font-family: var(--font-hand);
+  font-size: 1.45rem;
 }
 
 .lightbox-stage {
@@ -413,21 +1413,24 @@ dialog.lightbox::backdrop {
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: var(--radius-sm);
+  border: 3px solid var(--color-paper);
+  border-radius: var(--radius-sketch-1);
 }
 
 .lightbox-caption {
   margin: 0;
   max-width: 42rem;
   text-align: center;
-  font-size: var(--text-sm);
-  color: #f3f3ef;
+  font-family: var(--font-hand);
+  font-size: 1.45rem;
+  color: var(--color-paper);
 }
 
 .lightbox-loading {
   margin: 0;
-  font-size: var(--text-sm);
-  color: #e4e4de;
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+  color: var(--color-paper);
 }
 
 .lightbox-controls {
@@ -438,15 +1441,17 @@ dialog.lightbox::backdrop {
 }
 
 .lightbox .btn-lightbox {
-  min-width: 2.75rem;
+  min-width: 3rem;
   min-height: 2.75rem;
-  background-color: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.28);
-  color: #ffffff;
+  background-color: rgba(255, 253, 249, 0.14);
+  border-color: rgba(255, 253, 249, 0.65);
+  color: var(--color-paper);
 }
 
 .lightbox .btn-lightbox:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.24);
+  background-color: var(--color-heart);
+  border-color: var(--color-heart);
+  color: var(--color-paper);
 }
 
 @media (prefers-reduced-motion: reduce) {

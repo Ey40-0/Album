@@ -6,57 +6,513 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
     <!--
-      Reemplaza https://TU-PROYECTO.supabase.co por la Project URL real de tu proyecto Supabase.
       Nota: <meta http-equiv="Content-Security-Policy"> no soporta directivas como frame-ancestors,
       report-uri ni sandbox; el control de embed en iframes requiere cabeceras HTTP del servidor.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://qarraqwopmytcnfwlcmv.supabase.co blob: data:; connect-src https://qarraqwopmytcnfwlcmv.supabase.co; font-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://qarraqwopmytcnfwlcmv.supabase.co blob: data:; connect-src https://qarraqwopmytcnfwlcmv.supabase.co; font-src 'self' https://fonts.gstatic.com data:; form-action 'self'; base-uri 'self'; object-src 'none';"
     />
-    <title>Álbum privado</title>
+    <title>Con Amor para Catalina — Álbum privado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Pacifico&family=Patrick+Hand&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="css/base.css" />
+    <link rel="shortcut icon" href="assets/Heart.ico" type="image/x-icon" />
     <script src="js/vendor/supabase.js" defer></script>
     <script type="module" src="js/gallery.js"></script>
   </head>
-  <body>
+  <body class="sketch-body">
     <!-- Oculto por defecto hasta verificar sesión; la seguridad real la impone RLS en Supabase. -->
     <div id="album-shell" class="album-shell" hidden>
-      <header class="site-header">
-        <div class="site-header-inner">
-          <h1 class="site-title">Álbum</h1>
-          <button id="logout-button" type="button" class="btn btn-secondary">
-            Cerrar sesión
-          </button>
+      <!-- =====================================================================
+           1. PANTALLA DE BIENVENIDA / MENSAJE INTERACTIVO (Boceto Izquierdo)
+           Haz clic o toca en cualquier parte para lanzar corazones y avanzar
+           ===================================================================== -->
+      <section
+        id="welcome-screen"
+        class="welcome-screen"
+        role="button"
+        tabindex="0"
+        aria-label="Con Amor para Catalina. Presiona donde sea para continuar al álbum"
+      >
+        <div id="welcome-frame" class="welcome-frame sketch-box">
+          <!-- Capa de partículas para los corazones al hacer clic -->
+          <div id="welcome-fx-layer" class="welcome-fx-layer" aria-hidden="true"></div>
+
+          <!-- Corazón rojo dibujado a mano con rayitas (esquina superior derecha del boceto) -->
+          <div class="welcome-heart-top" aria-hidden="true">
+            <svg class="sketch-heart-svg" viewBox="0 0 90 85" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M45 74C41 69 10 48 9 27C8 14 19 7 30 9C38 11 43 18 45 24C47 18 53 9 62 9C72 9 81 17 80 29C79 49 49 69 45 74Z"
+                stroke="currentColor"
+                stroke-width="2.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M16 22L28 11M14 31L36 12M17 39L42 18M21 46L55 13M26 52L67 13M32 58L74 18M37 64L76 28M42 69L70 43"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                opacity="0.8"
+              />
+            </svg>
+          </div>
+
+          <!-- Texto central romántico tal como en el boceto -->
+          <div class="welcome-message">
+            <p class="welcome-greeting">Con Amor para</p>
+            <h1 class="welcome-name">Catalina</h1>
+            <p class="welcome-prompt">
+              <span class="welcome-prompt-dot" aria-hidden="true">✦</span>
+              presiona donde sea
+              <span class="welcome-prompt-dot" aria-hidden="true">✦</span>
+            </p>
+          </div>
+
+          <!-- Gatito dibujado a mano en la esquina inferior derecha (fiel al boceto) -->
+          <div class="welcome-cat-wrapper" aria-hidden="true">
+            <svg class="welcome-cat-svg" viewBox="0 0 160 155" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Oreja izquierda y cabeza y oreja derecha -->
+              <path
+                d="M38 62L33 24L60 41C70 38 84 38 94 41L121 24L116 62"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <!-- Trazo interior de las orejas -->
+              <path d="M40 50L38 33L52 43" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <path d="M114 50L116 33L102 43" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <!-- Mechoncito superior -->
+              <path d="M74 39L77 34L80 39" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <!-- Ojos expresivos -->
+              <circle class="cat-eye" cx="60" cy="63" r="3" fill="currentColor" />
+              <circle class="cat-eye" cx="94" cy="63" r="3" fill="currentColor" />
+              <!-- Mejillas sonrojadas sutiles -->
+              <ellipse class="cat-blush" cx="51" cy="70" rx="5" ry="2.8" />
+              <ellipse class="cat-blush" cx="103" cy="70" rx="5" ry="2.8" />
+              <!-- Nariz y boquita de gato -->
+              <path
+                d="M74 68L77 71L80 68"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M71 73C73.5 76 77 75 77 71C77 75 80.5 76 83 73"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <path d="M77 75L77 80" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+              <!-- Bigotes izquierda -->
+              <path
+                d="M38 64L18 60M37 70L15 71M39 76L21 82"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <!-- Bigotes derecha -->
+              <path
+                d="M116 64L136 60M117 70L139 71M115 76L133 82"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+              />
+              <!-- Pechito peludo -->
+              <path
+                d="M66 86L72 90L77 85L82 90L88 86"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <!-- Contorno del cuerpo sentado -->
+              <path
+                d="M42 78C30 96 31 122 38 140"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M112 78C122 96 121 122 114 140"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+              />
+              <!-- Patitas delanteras (arquitos como en el boceto) -->
+              <path
+                d="M52 140C53 128 63 128 64 140"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+              />
+              <path
+                d="M90 140C91 128 101 128 102 140"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+              />
+              <!-- Cola levantada y curva a la derecha -->
+              <g class="cat-tail">
+                <path
+                  d="M116 132C134 120 137 82 146 66C150 59 156 63 152 72C145 88 141 124 120 138"
+                  stroke="currentColor"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </g>
+            </svg>
+          </div>
         </div>
+      </section>
 
-        <nav id="section-nav" class="section-nav" aria-label="Secciones del álbum" hidden>
-          <ul id="section-nav-list" class="section-nav-list"></ul>
-        </nav>
-      </header>
+      <!-- =====================================================================
+           2. VISTA PRINCIPAL (DASHBOARD + GALERÍA - Boceto Derecho)
+           ===================================================================== -->
+      <div id="dashboard-view" class="dashboard-view" hidden>
+        <header class="site-header">
+          <div class="site-header-inner">
+            <div class="site-brand">
+              <span class="site-brand-heart" aria-hidden="true">♥</span>
+              <h1 class="site-title">Con Amor para Catalina</h1>
+            </div>
 
-      <main class="album-main">
-        <div id="album-status-bar" class="album-status-bar" hidden>
-          <p
-            id="album-status"
-            class="status-message"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          ></p>
-          <button id="retry-button" type="button" class="btn btn-secondary" hidden>
-            Reintentar
-          </button>
-        </div>
+            <div class="site-header-actions">
+              <button
+                id="btn-reopen-welcome"
+                type="button"
+                class="btn btn-secondary sketch-btn btn-sm"
+                title="Volver a ver el mensaje de bienvenida"
+              >
+                <span>Portada</span>
+              </button>
+              <button id="logout-button" type="button" class="btn btn-secondary sketch-btn btn-sm">
+                Cerrar sesión
+              </button>
+            </div>
+          </div>
 
-        <div id="album-sections" class="album-sections"></div>
-      </main>
+          <nav id="section-nav" class="section-nav" aria-label="Secciones del álbum" hidden>
+            <ul id="section-nav-list" class="section-nav-list"></ul>
+          </nav>
+        </header>
 
-      <footer class="site-footer">
-        <p>Álbum privado</p>
-      </footer>
+        <main class="album-main">
+          <!-- Barra de estado / error -->
+          <div id="album-status-bar" class="album-status-bar sketch-status" hidden>
+            <p
+              id="album-status"
+              class="status-message"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            ></p>
+            <button id="retry-button" type="button" class="btn btn-secondary sketch-btn btn-sm" hidden>
+              Reintentar
+            </button>
+          </div>
+
+          <!-- MARCO PRINCIPAL DEL BOCETO (Contiene las 2 Cards de Fotos a la izquierda y la Carta a la derecha) -->
+          <section class="dashboard-sketch-frame sketch-box" aria-label="Resumen del álbum y carta">
+            <div class="dashboard-grid">
+              <!-- COLUMNA IZQUIERDA: 2 Cards verticales con Banners ("Nosotros" y "Abraham") -->
+              <div class="dashboard-cards-col">
+                <!-- CARD 1: "Nosotros" (Filtra Casados-repo) -->
+                <article
+                  id="card-nosotros"
+                  class="story-card sketch-card"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Abrir fotos de Nosotros"
+                >
+                  <!-- Corazón rojo en la esquina superior derecha de la card "Nosotros" (igual al boceto) -->
+                  <div class="card-heart card-heart-top-right" aria-hidden="true">
+                    <svg class="sketch-heart-svg" viewBox="0 0 80 75" fill="none">
+                      <path
+                        d="M40 66C37 62 10 43 9 24C8 12 18 6 27 8C34 9 38 16 40 21C42 16 47 8 55 8C64 8 72 15 71 26C70 44 43 62 40 66Z"
+                        stroke="currentColor"
+                        stroke-width="2.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M16 20L26 11M14 29L33 12M17 36L38 18M21 42L49 14M26 47L60 13M31 53L67 18M36 58L68 27M40 62L63 40"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <header class="story-card-header">
+                    <h2 class="story-card-title">Nosotros</h2>
+                    <span id="count-nosotros" class="story-card-count">Cargando…</span>
+                  </header>
+
+                  <!-- Banner con miniatura aleatoria de Casados-repo y trazos diagonales del boceto -->
+                  <div class="story-banner-wrapper">
+                    <div class="story-banner-diagonal-lines" aria-hidden="true"></div>
+                    <div class="story-banner-frame">
+                      <img
+                        id="banner-img-nosotros"
+                        class="story-banner-img"
+                         alt="Recuerdo aleatorio de Nosotros"
+                        hidden
+                      />
+                      <div id="banner-placeholder-nosotros" class="story-banner-placeholder">
+                        <span>Cargando recuerdo…</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <footer class="story-card-footer">
+                    <span class="story-card-cta">Ver álbum Nosotros →</span>
+                    <button
+                      id="shuffle-nosotros"
+                      type="button"
+                      class="btn-shuffle-banner"
+                      title="Mostrar otra foto aleatoria de Nosotros"
+                      aria-label="Mostrar otra foto aleatoria de Nosotros"
+                    >
+                      ↻ Otra foto
+                    </button>
+                  </footer>
+                </article>
+
+                <!-- CARD 2: "Abraham" (Filtra Abraham-repo) -->
+                <article
+                  id="card-abraham"
+                  class="story-card sketch-card"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Abrir fotos de Abraham"
+                >
+                  <!-- Corazón rojo en la esquina inferior derecha de la card "Abraham" (igual al boceto) -->
+                  <div class="card-heart card-heart-bottom-right" aria-hidden="true">
+                    <svg class="sketch-heart-svg" viewBox="0 0 80 75" fill="none">
+                      <path
+                        d="M40 66C37 62 10 43 9 24C8 12 18 6 27 8C34 9 38 16 40 21C42 16 47 8 55 8C64 8 72 15 71 26C70 44 43 62 40 66Z"
+                        stroke="currentColor"
+                        stroke-width="2.8"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <path
+                        d="M16 20L26 11M14 29L33 12M17 36L38 18M21 42L49 14M26 47L60 13M31 53L67 18M36 58L68 27M40 62L63 40"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <header class="story-card-header">
+                    <h2 class="story-card-title">Abraham</h2>
+                    <span id="count-abraham" class="story-card-count">Cargando…</span>
+                  </header>
+
+                  <!-- Banner con miniatura aleatoria de Abraham-repo y trazos diagonales del boceto -->
+                  <div class="story-banner-wrapper">
+                    <div class="story-banner-diagonal-lines" aria-hidden="true"></div>
+                    <div class="story-banner-frame">
+                      <img
+                        id="banner-img-abraham"
+                        class="story-banner-img"
+                        alt="Recuerdo aleatorio de Abraham"
+                        hidden
+                      />
+                      <div id="banner-placeholder-abraham" class="story-banner-placeholder">
+                        <span>Cargando recuerdo…</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <footer class="story-card-footer">
+                    <span class="story-card-cta">Ver álbum Abraham →</span>
+                    <button
+                      id="shuffle-abraham"
+                      type="button"
+                      class="btn-shuffle-banner"
+                      title="Mostrar otra foto aleatoria de Abraham"
+                      aria-label="Mostrar otra foto aleatoria de Abraham"
+                    >
+                      ↻ Otra foto
+                    </button>
+                  </footer>
+                </article>
+              </div>
+
+              <!-- COLUMNA DERECHA (En móvil aparece PRIMERA arriba): Card de "Carta a Mano" -->
+              <aside class="dashboard-letter-col" aria-labelledby="letter-heading">
+                <div id="card-letter" class="letter-card sketch-card">
+                  <div class="letter-pin-doodle" aria-hidden="true">
+                    <svg width="36" height="18" viewBox="0 0 36 18" fill="none">
+                      <path
+                        d="M3 14C11 4 25 4 33 14"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <!-- =========================================================
+                       TEXTO DE LA CARTA A MANO (Edita el texto aquí cuando gustes)
+                       ========================================================= -->
+                  <div class="letter-paper">
+                    <h2 id="letter-heading" class="letter-title">Para ti, mi amor:</h2>
+                    <div class="letter-body">
+                      <p>
+                        Hola mi amor, con mucho cariño le prepare este album de fotos para que
+                        los recuerdos no se pierdan nunca y pueda revivirlos cada vez que quiera.
+                        Espero que le guste y que lo disfrute, porque lo hice con todo mi amor para usted.
+                      </p>
+                      <p>
+                        Sinceramente no soy muy bueno con las palabras, tampoco con las manos, pero
+                        aqui hice mi mejor esfuerzo para tenerle un presente aunque sea a mi manera.
+                        De todo corazon mi vida, una vez mas le digo que la amo y que usted es lo mejor que me ha pasado en la vida.  
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Pie de la carta: ilustración del muñequito sosteniendo un corazón (del boceto) + botón "Ver todas" -->
+                  <div class="letter-footer">
+                    <div class="letter-doodle-figure" aria-hidden="true">
+                      <svg
+                        class="figure-heart-svg"
+                        viewBox="0 0 120 115"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <!-- Corazón que sostiene en alto (izquierda superior, igual al boceto) -->
+                        <path
+                          class="doodle-held-heart"
+                          d="M34 45C31 41 14 29 14 17C14 10 20 6 26 7C30 8 33 12 34 16C36 12 39 7 44 7C50 7 55 12 54 19C53 30 37 42 34 45Z"
+                          stroke="#c93b3b"
+                          stroke-width="2.3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                        <path
+                          d="M20 15L27 9M19 22L32 10M22 28L41 11M27 34L48 14M31 39L49 22"
+                          stroke="#c93b3b"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                        />
+                        <!-- Cabeza inclinada con ternura -->
+                        <ellipse
+                          cx="74"
+                          cy="54"
+                          rx="16"
+                          ry="14"
+                          transform="rotate(-8 74 54)"
+                          stroke="currentColor"
+                          stroke-width="2.3"
+                        />
+                        <!-- Sonrisa y ojitos -->
+                        <circle cx="68" cy="52" r="1.6" fill="currentColor" />
+                        <circle cx="77" cy="50" r="1.6" fill="currentColor" />
+                        <path
+                          d="M69 58C71 61 75 60 77 57"
+                          stroke="currentColor"
+                          stroke-width="1.8"
+                          stroke-linecap="round"
+                        />
+                        <!-- Brazos levantados entregando el corazón -->
+                        <path
+                          d="M65 66L38 48M68 71L44 47"
+                          stroke="currentColor"
+                          stroke-width="2.2"
+                          stroke-linecap="round"
+                        />
+                        <!-- Torso y piernas (como en el boceto) -->
+                        <path
+                          d="M72 68L68 88M68 88L54 106M68 88L82 106"
+                          stroke="currentColor"
+                          stroke-width="2.3"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </div>
+
+                    <button id="btn-view-all" type="button" class="btn btn-primary sketch-btn btn-view-all">
+                      <span>Bajar a ver mas</span>
+                      <svg class="btn-heart-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path
+                          d="M12 20.5C10.5 19 3.5 13.8 3.5 8.2C3.5 5.2 6 3.5 8.5 3.5C10.2 3.5 11.4 4.5 12 5.8C12.6 4.5 13.8 3.5 15.5 3.5C18 3.5 20.5 5.2 20.5 8.2C20.5 13.8 13.5 19 12 20.5Z"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </section>
+
+          <!-- =====================================================================
+               3. SECCIÓN DE GALERÍA COMPLETA Y FILTRADA
+               ===================================================================== -->
+          <section id="gallery-view" class="gallery-view" aria-label="Galería de fotos">
+            <div class="gallery-toolbar sketch-box-subtle">
+              <div class="gallery-filter-group" role="tablist" aria-label="Filtrar fotos por álbum">
+                <button
+                  type="button"
+                  class="filter-pill is-active"
+                  data-filter="all"
+                  role="tab"
+                  aria-selected="true"
+                >
+                  ♥ Todas las fotos
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  data-filter="nosotros"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Nosotros
+                </button>
+                <button
+                  type="button"
+                  class="filter-pill"
+                  data-filter="abraham"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Abraham
+                </button>
+              </div>
+
+              <button id="btn-back-top" type="button" class="btn-link-sketch">
+                ↑ Subir a la carta
+              </button>
+            </div>
+
+            <div id="album-sections" class="album-sections"></div>
+          </section>
+        </main>
+
+        <footer class="site-footer">
+          <p>Hecho a mano con todo mi amor para Catalina ♥</p>
+        </footer>
+      </div>
     </div>
 
+    <!-- Visor de fotos a pantalla completa (Lightbox) -->
     <dialog id="lightbox" class="lightbox" aria-label="Visor de foto">
       <div id="lightbox-shell" class="lightbox-shell">
         <div class="lightbox-topbar">
@@ -64,10 +520,10 @@
           <button
             id="lightbox-close"
             type="button"
-            class="btn btn-lightbox"
+            class="btn btn-lightbox sketch-btn"
             aria-label="Cerrar visor"
           >
-            Cerrar
+            ✕ Cerrar
           </button>
         </div>
 
@@ -83,18 +539,18 @@
           <button
             id="lightbox-prev"
             type="button"
-            class="btn btn-lightbox"
+            class="btn btn-lightbox sketch-btn"
             aria-label="Foto anterior"
           >
-            Anterior
+            ← Anterior
           </button>
           <button
             id="lightbox-next"
             type="button"
-            class="btn btn-lightbox"
+            class="btn btn-lightbox sketch-btn"
             aria-label="Foto siguiente"
           >
-            Siguiente
+            Siguiente →
           </button>
         </div>
       </div>
